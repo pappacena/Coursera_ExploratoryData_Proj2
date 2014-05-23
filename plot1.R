@@ -12,6 +12,26 @@ if(!file.exists("./data/summarySCC_PM25.rds") ||
     unzip("./data/NEI_data.zip", exdir="data")
 }
 
-NEI <- readRDS("data/summarySCC_PM25.rds")
-SCC <- readRDS("data/Source_Classification_Code.rds")
-full_dataset <- merge(NEI, SCC, by="SCC")
+
+# Loads only if not in environment
+if(!exists("NEI")) {
+    NEI <- readRDS("data/summarySCC_PM25.rds")
+}
+if(!exists("SCC")) {
+    SCC <- readRDS("data/Source_Classification_Code.rds")
+}
+
+if(!exists("full_dataset")) {
+    full_dataset <- merge(NEI, SCC, by="SCC")
+}
+
+
+to_plot <- full_dataset[c("year", "Emissions")]
+agg <- aggregate(to_plot$Emissions, list(Year=to_plot$year), sum)
+names(agg) <- c("Year", "Sum.Emissions")
+
+with(agg, {
+    png(file = "plot1.png", bg = "transparent")
+    plot(Year, Sum.Emissions, type="line")
+    dev.off()
+})
